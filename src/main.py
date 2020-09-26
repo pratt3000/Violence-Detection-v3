@@ -12,6 +12,7 @@ detector.setModelPath(config.PRETRAINED_MODEL_PATH)
 detector.loadModel(detection_speed = config.OBJECT_DETECTION_SPEED) #change parameter to adjust accuracy and speed
 custom = detector.CustomObjects(person=True)
 
+
 def get_boxes(frame):
     _, detections = detector.detectCustomObjectsFromImage(
         custom_objects=custom,
@@ -33,6 +34,12 @@ def mask_frame(frame, detections):
     
     return result
 
+def text_to_frame(frame, label):
+    font = config.FONT
+    cv2.putText(frame, label, (50, 50), font, 1, (0, 0, 255), 2, cv2.LINE_4)
+
+    return frame
+
 
 vidcap = cv2.VideoCapture(0)
 success = True
@@ -42,8 +49,10 @@ while(success):
 
     detections = get_boxes(frame)
     masked_frame = mask_frame(frame, detections)
-    
-    cv2.imshow('result', masked_frame)
+    label = 'Violence'  #add CNN ka jo bhi here 
+    frame_with_label = text_to_frame(masked_frame, label)
+
+    cv2.imshow('result', frame_with_label)
     cv2.waitKey(1)
 
     # if cv2.waitKey(1) & 0xFF == ord('q'):
