@@ -11,7 +11,7 @@ detector.setModelTypeAsRetinaNet()
 detector.setModelPath(config.PRETRAINED_MODEL_PATH)
 detector.loadModel(detection_speed = config.OBJECT_DETECTION_SPEED) #change parameter to adjust accuracy and speed
 custom = detector.CustomObjects(person=True)
-
+cv2.namedWindow('result', cv2.WINDOW_AUTOSIZE)
 
 def get_boxes(frame):
     _, detections = detector.detectCustomObjectsFromImage(
@@ -57,31 +57,36 @@ success = True
 frame_temp=np.zeros((config.IMG_SIZE,config.IMG_SIZE)).astype(np.uint8) 
 stacked_frames=[]
 count=0
+
 while(success):
 
-    success, frame = vidcap.read()                  # get frame serially
+    success, frame = vidcap.read()                          # get frame serially
     
-    #detections = get_boxes(frame)                   # get obj detection
-    frame = frame_preprocessing(frame)              # grayscale  
-    diff = get_frame_difference(frame, frame_temp)  # get difference btw frames
-    # frame = mask_frame(frame, detections)         # mask is not needed
+    detections = get_boxes(frame)                           # get obj detection
+
+    frame = frame_preprocessing(frame)                      # grayscale  
+    frame_diff = get_frame_difference(frame, frame_temp)    # get difference btw frames
+    frame = mask_frame(frame_diff, detections)              # mask is not needed
 
     if count < config.FRAME_BATCH_SIZE:
-        stacked_frames.append(diff)
+        stacked_frames.append(frame)
         count += 1
     else:
         stacked_frames=[]
         count = 0
     frame_temp = frame
 
-    label = 'Violence'                      #add CNN ka evaluate here
+    label = 'Violence'                                      #add CNN ka predict() here
     frame = text_to_frame(frame, label)
 
-    diff = cv2.resize(diff, (960, 540))
-    cv2.imshow('result', diff)
+    #frame = cv2.resize(frame, (960, 540))
+    cv2.imshow('result', frame)
     
     cv2.waitKey(1)
 
-    # if cv2.waitKey(1) & 0xFF == ord('q'):
-    #     break
+    if cv2.waitKey(25) & 0xFF == ord('q'):
+        break
 
+cv2.waitKey()
+cv2.destroyAllWindows()
+cv2.waitKey() 
