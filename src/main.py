@@ -36,7 +36,7 @@ def mask_frame(frame, detections):
 
 def text_to_frame(frame, label):
 
-    cv2.putText(frame, label, (50, 10), config.FONT, fontScale = 0.1, color = (0, 0, 255), thickness=1)
+    cv2.putText(frame, label, (0, 10), config.FONT, fontScale = 0.3, color = (0, 0, 255), thickness=1)
 
     return frame
 
@@ -48,8 +48,7 @@ def frame_preprocessing(frame):
 
 def get_frame_difference(frame_1, frame_2):
     frame = cv2.absdiff(frame_1, frame_2)
-    print(frame.shape)
-    ret,thresh1 = cv2.threshold(frame,127,255,cv2.THRESH_BINARY)   #127 is threshold
+    ret,thresh1 = cv2.threshold(frame,config.THRESHOLD_DIFF_TOLERANCE,255,cv2.THRESH_BINARY)   #127 is threshold
     return thresh1
 
 
@@ -63,24 +62,27 @@ while(success):
     success, frame = vidcap.read()
     
     detections = get_boxes(frame)           #get obj detection
-    frame = mask_frame(frame, detections)   #mask
-    frame = frame_preprocessing(frame)      #grayscale     
     
+    frame = frame_preprocessing(frame)      #grayscale  
 
-    # diff = get_frame_difference(frame, frame_temp)
-    # if count < config.FRAME_BATCH_SIZE:
-    #     stacked_frames.append(diff)
-    #     count += 1
-    # else:
-    #     stacked_frames=[]
-    #     count = 0
+    diff = get_frame_difference(frame, frame_temp)
+    # frame = mask_frame(frame, detections)   #mask is not needed
 
-    # frame_temp = frame
+    if count < config.FRAME_BATCH_SIZE:
+        stacked_frames.append(diff)
+        count += 1
+    else:
+        stacked_frames=[]
+        count = 0
+
+    frame_temp = frame
 
     label = 'Violence'                      #add CNN ka evaluate here
     frame = text_to_frame(frame, label)
 
-    cv2.imshow('result', frame)
+    diff = cv2.resize(diff, (960, 540))
+    cv2.imshow('result', diff)
+    
     cv2.waitKey(1)
 
     # if cv2.waitKey(1) & 0xFF == ord('q'):
