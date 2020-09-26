@@ -59,14 +59,12 @@ stacked_frames=[]
 count=0
 while(success):
 
-    success, frame = vidcap.read()
+    success, frame = vidcap.read()                  # get frame serially
     
-    detections = get_boxes(frame)           #get obj detection
-    
-    frame = frame_preprocessing(frame)      #grayscale  
-
-    diff = get_frame_difference(frame, frame_temp)
-    # frame = mask_frame(frame, detections)   #mask is not needed
+    #detections = get_boxes(frame)                   # get obj detection
+    frame = frame_preprocessing(frame)              # grayscale  
+    diff = get_frame_difference(frame, frame_temp)  # get difference btw frames
+    # frame = mask_frame(frame, detections)         # mask is not needed
 
     if count < config.FRAME_BATCH_SIZE:
         stacked_frames.append(diff)
@@ -74,7 +72,6 @@ while(success):
     else:
         stacked_frames=[]
         count = 0
-
     frame_temp = frame
 
     label = 'Violence'                      #add CNN ka evaluate here
