@@ -21,7 +21,7 @@ def get_boxes(frame):
         )
     return detections
 
-def mask_frame(frame):
+def mask_frame(frame, detections):
     mask = np.zeros(frame.shape, dtype=np.uint8)
 
     for eachObject in detections:
@@ -41,7 +41,7 @@ while(success):
     success, frame = vidcap.read()
 
     detections = get_boxes(frame)
-    masked_frame = mask_frame(frame)
+    masked_frame = mask_frame(frame, detections)
     
     cv2.imshow('result', masked_frame)
     cv2.waitKey(1)
