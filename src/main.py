@@ -7,7 +7,9 @@ import numpy as np
 
 
 detector = ObjectDetection()
-detector.setModelTypeAsRetinaNet()
+# detector.setModelTypeAsRetinaNet()
+# detector.setModelTypeAsYOLOv3()
+detector.setModelTypeAsTinyYOLOv3()
 detector.setModelPath(config.PRETRAINED_MODEL_PATH)
 detector.loadModel(detection_speed = config.OBJECT_DETECTION_SPEED) #change parameter to adjust accuracy and speed
 custom = detector.CustomObjects(person=True)
@@ -81,8 +83,8 @@ while(success):
     label = 'Violence'                      #add CNN ka evaluate here
     diff = text_to_frame(diff, label)
 
-    frame = cv2.resize(frame, (960, 540))
-    cv2.imshow('result', diff)
+    frame = cv2.resize(diff, (1000, 1000))
+    cv2.imshow('result', frame)
     
     cv2.waitKey(1)
 
