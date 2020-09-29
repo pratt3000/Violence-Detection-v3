@@ -7,9 +7,9 @@ import numpy as np
 
 
 detector = ObjectDetection()
-# detector.setModelTypeAsRetinaNet()
-# detector.setModelTypeAsYOLOv3()
-detector.setModelTypeAsTinyYOLOv3()
+# detector.setModelTypeAsYOLOv3()       # big boi
+# detector.setModelTypeAsRetinaNet()    # aam admi
+detector.setModelTypeAsTinyYOLOv3()     # smol
 detector.setModelPath(config.PRETRAINED_MODEL_PATH)
 detector.loadModel(detection_speed = config.OBJECT_DETECTION_SPEED) #change parameter to adjust accuracy and speed
 custom = detector.CustomObjects(person=True)
@@ -68,10 +68,10 @@ while(success):
     
     frame = mask_frame(frame, detections, detections_temp)          # mask is not needed
     frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    diff = get_frame_difference(frame, frame_temp)  # get difference btw frames
+    frame_diff = get_frame_difference(frame, frame_temp)  # get difference btw frames
     
     # if count < config.FRAME_BATCH_SIZE:
-    #     stacked_frames.append(diff)
+    #     stacked_frames.append(frame_diff)
     #     count += 1
     # else:
     #     stacked_frames=[]
@@ -81,10 +81,10 @@ while(success):
     detections_temp = detections
 
     label = 'Violence'                      #add CNN ka evaluate here
-    diff = text_to_frame(diff, label)
+    image = text_to_frame(frame_diff, label)
 
-    frame = cv2.resize(diff, (1000, 1000))
-    cv2.imshow('result', frame)
+    image = cv2.resize(image, (1000, 1000))
+    cv2.imshow('result', image)
     
     cv2.waitKey(1)
 
