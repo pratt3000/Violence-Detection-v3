@@ -10,7 +10,7 @@ detector = ObjectDetection()
 # detector.setModelTypeAsYOLOv3()       # big boi
 # detector.setModelTypeAsRetinaNet()    # aam admi
 detector.setModelTypeAsTinyYOLOv3()     # smol
-detector.setModelPath(config.PRETRAINED_MODEL_PATH)
+detector.setModelPath("/home/pratt3000/Documents/projects/Violence Detection-v3/models/object_detection/yolo-tiny.h5")
 detector.loadModel(detection_speed = config.OBJECT_DETECTION_SPEED) #change parameter to adjust accuracy and speed
 custom = detector.CustomObjects(person=True)
 
@@ -79,6 +79,10 @@ while(success):
 
     frame_temp = frame
     detections_temp = detections
+
+    model = get_model()
+    model.load_weights("/home/pratt3000/Documents/projects/Violence Detection-v3/models/classification/saved-model-01-0.56.hdf5")
+    model.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
 
     label = 'Violence'                      #add CNN ka evaluate here
     image = text_to_frame(frame_diff, label)
