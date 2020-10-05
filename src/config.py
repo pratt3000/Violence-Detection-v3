@@ -11,6 +11,5 @@ EPOCHS = 5
 TRAIN_DIR = "/home/pratt3000/Documents/projects/Violence Detection-v3/movies/"
 VAL_DIR = "/home/pratt3000/Documents/projects/Violence Detection-v3/movies/"
 MODEL_FILE_SAVE_PATH = "/kaggle/working/saved-model-{epoch:02d}-{val_acc:.2f}.hdf5"
-
 TRAIN_DATASET_SIZE = 100
 VAL_DATASET_SIZE= 10

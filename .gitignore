@@ -1,2 +1,4 @@
 models/
 tf1/
+src/__pycache__
+movies/

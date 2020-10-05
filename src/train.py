@@ -179,4 +179,3 @@ model.fit_generator(
                     validation_data = my_generater(config.VAL_DIR, config.VAL_DATASET_SIZE),
                     callbacks = [checkpoint]
                    )
-
