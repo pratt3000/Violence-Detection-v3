@@ -28,7 +28,7 @@ def get_boxes(frame):
         input_type="array",
         input_image= frame,
         output_type="array"
-        )
+    )
     return detections
 
 
@@ -82,8 +82,8 @@ def my_generater(in_dir, total_videos):
                 break
 
             frame_temp = cv2.resize(frame_temp, dsize=(config.IMG_SIZE, config.IMG_SIZE), interpolation=cv2.INTER_CUBIC)
-            detections_temp = get_boxes(frame_temp) 
-            frame_temp = FUNC.mask_frame(frame_temp, detections_temp, detections_temp_2)                    
+            #detections_temp = get_boxes(frame_temp) 
+            #frame_temp = FUNC.mask_frame(frame_temp, detections_temp, detections_temp_2)                    
             frame_temp = cv2.cvtColor(frame_temp, cv2.COLOR_BGR2GRAY)
             
             for k in range(config.FRAME_BATCH_SIZE - 1):
@@ -94,15 +94,15 @@ def my_generater(in_dir, total_videos):
                     break
                     
                 frame = cv2.resize(frame, dsize=(config.IMG_SIZE, config.IMG_SIZE), interpolation=cv2.INTER_CUBIC)
-                detections = get_boxes(frame)                   
-                frame = FUNC.mask_frame(frame, detections, detections_temp)   
+                #detections = get_boxes(frame)                   
+                #frame = FUNC.mask_frame(frame, detections, detections_temp)   
                 frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)                  
                  
                 diff = FUNC.get_frame_difference(frame, frame_temp)/255
                 images_frame_batches.append(diff)
 
                 frame_temp = frame
-                detections_temp=detections
+                #detections_temp=detections
 
             if flag_valid_video == 1:
                 labelss=[]
