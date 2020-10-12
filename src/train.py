@@ -5,10 +5,12 @@ import random
 import os
 import cv2
 import numpy as np
-from imageai.Detection import ObjectDetection
-from keras.layers import Input, Permute, GaussianNoise, ConvLSTM2D, Conv2D, Flatten, Dense, BatchNormalization, Dropout, TimeDistributed, UpSampling2D, MaxPooling2D, Add
-from keras.models import Model 
+# from imageai.Detection import ObjectDetection
+from keras.layers import Conv3D, MaxPooling3D, Activation, Dropout, Flatten, Dense
+from keras.models import Model, Sequential
 from keras.callbacks import ModelCheckpoint
+from keras.optimizers import Adam
+from keras.losses import categorical_crossentropy
 
 # detector = ObjectDetection()
 # detector.setModelTypeAsTinyYOLOv3()
@@ -126,56 +128,38 @@ def my_generater(in_dir, total_videos):
 
 ######################################## MODEL ###########################################
 
-
-inp = Input((config.FRAME_BATCH_SIZE - 1, config.IMG_SIZE, config.IMG_SIZE, 1))
-permuted = Permute((2, 3, 4, 1))(inp)
-noise = GaussianNoise(0.1)(permuted)
-c = 4
-x = Permute((4, 1, 2, 3))(noise)
-conv_lstm_output_1 = ConvLSTM2D(6, (3, 3), padding='same')(x)
-conv_output = Conv2D(3, (3, 3), padding="same")(conv_lstm_output_1)
-# x =(ConvLSTM2D(filters=c, kernel_size=(3,3),padding='same',name='conv_lstm1', return_sequences=True))(x)
-
-# c1=(BatchNormalization())(x)
-# c1 = Dropout(0.9)(c1)
-# x =(TimeDistributed(MaxPooling2D(pool_size=(2,2))))(c1)
-
-# x =(ConvLSTM2D(filters=2c,kernel_size=(3,3),padding='same',name='conv_lstm2',return_sequences=True))(x)
-# c2=(BatchNormalization())(x)
-# x = Dropout(0.2)(x)
-
-# x =(TimeDistributed(MaxPooling2D(pool_size=(2,2))))(c2)
-# x =(ConvLSTM2D(filters=4c,kernel_size=(3,3),padding='same',name='conv_lstm3',return_sequences=True))(x)
-# x =(BatchNormalization())(x)
-
-# x = Add()([c2, x])
-# x = Dropout(0.2)(x)
-
-# x =(TimeDistributed(UpSampling2D(size=(2, 2))))(c1)
-# x =(ConvLSTM2D(filters=c,kernel_size=(3,3),padding='same',name='conv_lstm6',return_sequences=False))(x)
-# x =(BatchNormalization())(x)
-
-x = (Flatten())(conv_output)
-x = (Dense(units=10, activation='relu'))(x)
-
-x = (Dense(units=2, activation='sigmoid'))(x)
-
-model = Model(inputs=[inp], outputs=[x])
-   
-
-############################################### MODEL END ##########################################
+model = Sequential()
+model.add(Conv3D(32, kernel_size=(3, 3, 3), input_shape=(config.FRAME_BATCH_SIZE - 1, config.IMG_SIZE, config.IMG_SIZE, 1), border_mode='same'))
+model.add(Activation('relu'))
+model.add(Conv3D(32, kernel_size=(3, 3, 3), border_mode='same'))
+model.add(Activation('softmax'))
+model.add(MaxPooling3D(pool_size=(3, 3, 3), border_mode='same'))
+model.add(Dropout(0.25))
+model.add(Conv3D(64, kernel_size=(3, 3, 3), border_mode='same'))
+model.add(Activation('relu'))
+model.add(Conv3D(64, kernel_size=(3, 3, 3), border_mode='same'))
+model.add(Activation('softmax'))
+model.add(MaxPooling3D(pool_size=(3, 3, 3), border_mode='same'))
+model.add(Dropout(0.25))
+model.add(Flatten())
+model.add(Dense(512, activation='sigmoid'))
+model.add(Dropout(0.5))
+model.add(Dense(2, activation='softmax'))
 
 print(model.summary())
 
-model.compile(optimizer='adam', loss='mse', metrics=['accuracy'])
+############################################### MODEL END ##########################################
 
-checkpoint = ModelCheckpoint(config.MODEL_FILE_SAVE_PATH, monitor='val_acc', verbose=1, save_best_only=False, mode='max')
+# model.compile(loss=categorical_crossentropy, optimizer=Adam(), metrics=['accuracy'])
 
-model.fit_generator(
-                    my_generater(config.TRAIN_DIR, config.TRAIN_DATASET_SIZE),
-                    steps_per_epoch = int(steps_per_epoch),
-                    epochs = config.EPOCHS,
-                    validation_steps = int(validation_steps),
-                    validation_data = my_generater(config.VAL_DIR, config.VAL_DATASET_SIZE),
-                    callbacks = [checkpoint]
-                   )
+# checkpoint = ModelCheckpoint(config.MODEL_FILE_SAVE_PATH, monitor='val_acc', verbose=1, save_best_only=False, mode='max')
+
+# model.fit_generator(
+#                     my_generater(config.TRAIN_DIR, config.TRAIN_DATASET_SIZE),
+#                     steps_per_epoch = int(steps_per_epoch),
+#                     epochs = config.EPOCHS,
+#                     validation_steps = int(validation_steps),
+#                     validation_data = my_generater(config.VAL_DIR, config.VAL_DATASET_SIZE),
+#                     callbacks = [checkpoint]
+#                    )
+
