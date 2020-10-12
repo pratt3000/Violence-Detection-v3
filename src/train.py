@@ -5,18 +5,11 @@ import random
 import os
 import cv2
 import numpy as np
-# from imageai.Detection import ObjectDetection
 from keras.layers import Conv3D, MaxPooling3D, Activation, Dropout, Flatten, Dense
 from keras.models import Model, Sequential
 from keras.callbacks import ModelCheckpoint
 from keras.optimizers import Adam
 from keras.losses import categorical_crossentropy
-
-# detector = ObjectDetection()
-# detector.setModelTypeAsTinyYOLOv3()
-# detector.setModelPath(config.PRETRAINED_MODEL_PATH)
-# detector.loadModel(detection_speed = config.OBJECT_DETECTION_SPEED) #change parameter to adjust accuracy and speed
-# custom = detector.CustomObjects(person=True)
 
 total_number_frames_train = FUNC.get_total_frames(config.TRAIN_DIR, config.TRAIN_DATASET_SIZE)
 total_number_frames_valid = FUNC.get_total_frames(config.VAL_DIR, config.VAL_DATASET_SIZE)
@@ -24,15 +17,8 @@ total_number_frames_valid = FUNC.get_total_frames(config.VAL_DIR, config.VAL_DAT
 steps_per_epoch = total_number_frames_train // (config.BATCH_SIZE * config.FRAME_BATCH_SIZE)
 validation_steps = total_number_frames_valid // (config.BATCH_SIZE * config.FRAME_BATCH_SIZE)
 
-# def get_boxes(frame):
-#     _, detections = detector.detectCustomObjectsFromImage(
-#         custom_objects=custom,
-#         input_type="array",
-#         input_image= frame,
-#         output_type="array"
-#     )
-#     return detections
-
+kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3)); 
+fgbg = cv2.createBackgroundSubtractorMOG2();
 
 def my_generater(in_dir, total_videos):     
 
@@ -76,17 +62,7 @@ def my_generater(in_dir, total_videos):
 
         for j in range(int(length/config.FRAME_BATCH_SIZE)):
             
-            # detections_temp_2=[]
             images_frame_batches=[]
-            
-            success,frame_temp = vidcap.read()
-            if success == False:
-                break
-
-            frame_temp = cv2.resize(frame_temp, dsize=(config.IMG_SIZE, config.IMG_SIZE), interpolation=cv2.INTER_CUBIC)
-            #detections_temp = get_boxes(frame_temp) 
-            #frame_temp = FUNC.mask_frame(frame_temp, detections_temp, detections_temp_2)                    
-            frame_temp = cv2.cvtColor(frame_temp, cv2.COLOR_BGR2GRAY)
             
             for k in range(config.FRAME_BATCH_SIZE - 1):
 
@@ -96,15 +72,11 @@ def my_generater(in_dir, total_videos):
                     break
                     
                 frame = cv2.resize(frame, dsize=(config.IMG_SIZE, config.IMG_SIZE), interpolation=cv2.INTER_CUBIC)
-                #detections = get_boxes(frame)                   
-                #frame = FUNC.mask_frame(frame, detections, detections_temp)   
-                frame = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)                  
-                 
-                diff = FUNC.get_frame_difference(frame, frame_temp)/255
-                images_frame_batches.append(diff)
+                frame = fgbg.apply(frame);
+                frame = cv2.morphologyEx(frame, cv2.MORPH_OPEN, kernel);                  
+                frame = frame/255
 
-                frame_temp = frame
-                #detections_temp=detections
+                images_frame_batches.append(frame)
 
             if flag_valid_video == 1:
                 labelss=[]
@@ -150,16 +122,16 @@ print(model.summary())
 
 ############################################### MODEL END ##########################################
 
-# model.compile(loss=categorical_crossentropy, optimizer=Adam(), metrics=['accuracy'])
+model.compile(loss=categorical_crossentropy, optimizer=Adam(), metrics=['accuracy'])
 
-# checkpoint = ModelCheckpoint(config.MODEL_FILE_SAVE_PATH, monitor='val_acc', verbose=1, save_best_only=False, mode='max')
+checkpoint = ModelCheckpoint(config.MODEL_FILE_SAVE_PATH, monitor='val_acc', verbose=1, save_best_only=False, mode='max')
 
-# model.fit_generator(
-#                     my_generater(config.TRAIN_DIR, config.TRAIN_DATASET_SIZE),
-#                     steps_per_epoch = int(steps_per_epoch),
-#                     epochs = config.EPOCHS,
-#                     validation_steps = int(validation_steps),
-#                     validation_data = my_generater(config.VAL_DIR, config.VAL_DATASET_SIZE),
-#                     callbacks = [checkpoint]
-#                    )
+model.fit_generator(
+                    my_generater(config.TRAIN_DIR, config.TRAIN_DATASET_SIZE),
+                    steps_per_epoch = int(steps_per_epoch),
+                    epochs = config.EPOCHS,
+                    validation_steps = int(validation_steps),
+                    validation_data = my_generater(config.VAL_DIR, config.VAL_DATASET_SIZE),
+                    callbacks = [checkpoint]
+                   )
 
