@@ -6,15 +6,15 @@ import os
 import cv2
 import numpy as np
 from imageai.Detection import ObjectDetection
-from keras.layers import Input, Permute, GaussianNoise, ConvLSTM2D, Conv2D, Flatten, Dense
+from keras.layers import Input, Permute, GaussianNoise, ConvLSTM2D, Conv2D, Flatten, Dense, BatchNormalization, Dropout, TimeDistributed, UpSampling2D, MaxPooling2D, Add
 from keras.models import Model 
 from keras.callbacks import ModelCheckpoint
 
-detector = ObjectDetection()
-detector.setModelTypeAsTinyYOLOv3()
-detector.setModelPath(config.PRETRAINED_MODEL_PATH)
-detector.loadModel(detection_speed = config.OBJECT_DETECTION_SPEED) #change parameter to adjust accuracy and speed
-custom = detector.CustomObjects(person=True)
+# detector = ObjectDetection()
+# detector.setModelTypeAsTinyYOLOv3()
+# detector.setModelPath(config.PRETRAINED_MODEL_PATH)
+# detector.loadModel(detection_speed = config.OBJECT_DETECTION_SPEED) #change parameter to adjust accuracy and speed
+# custom = detector.CustomObjects(person=True)
 
 total_number_frames_train = FUNC.get_total_frames(config.TRAIN_DIR, config.TRAIN_DATASET_SIZE)
 total_number_frames_valid = FUNC.get_total_frames(config.VAL_DIR, config.VAL_DATASET_SIZE)
@@ -22,14 +22,14 @@ total_number_frames_valid = FUNC.get_total_frames(config.VAL_DIR, config.VAL_DAT
 steps_per_epoch = total_number_frames_train // (config.BATCH_SIZE * config.FRAME_BATCH_SIZE)
 validation_steps = total_number_frames_valid // (config.BATCH_SIZE * config.FRAME_BATCH_SIZE)
 
-def get_boxes(frame):
-    _, detections = detector.detectCustomObjectsFromImage(
-        custom_objects=custom,
-        input_type="array",
-        input_image= frame,
-        output_type="array"
-    )
-    return detections
+# def get_boxes(frame):
+#     _, detections = detector.detectCustomObjectsFromImage(
+#         custom_objects=custom,
+#         input_type="array",
+#         input_image= frame,
+#         output_type="array"
+#     )
+#     return detections
 
 
 def my_generater(in_dir, total_videos):     
@@ -74,7 +74,7 @@ def my_generater(in_dir, total_videos):
 
         for j in range(int(length/config.FRAME_BATCH_SIZE)):
             
-            detections_temp_2=[]
+            # detections_temp_2=[]
             images_frame_batches=[]
             
             success,frame_temp = vidcap.read()
@@ -156,9 +156,9 @@ conv_output = Conv2D(3, (3, 3), padding="same")(conv_lstm_output_1)
 # x =(BatchNormalization())(x)
 
 x = (Flatten())(conv_output)
-# x = (Dense(units=10, activation='relu'))(x)
+x = (Dense(units=10, activation='relu'))(x)
 
-x = (Dense(units=2, activation='relu'))(x)
+x = (Dense(units=2, activation='sigmoid'))(x)
 
 model = Model(inputs=[inp], outputs=[x])
    
