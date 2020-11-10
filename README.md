@@ -2,7 +2,7 @@
 
 BEST RESULT : 
 
-Model type : 3D CNN + FC [base - VGG19 features] <br>
+Model type : 3D CNN + FC [base - VGG19] <br>
 Accuracy : 68.54%
 
 ### Micellaneous 
